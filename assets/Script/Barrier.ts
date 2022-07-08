@@ -50,6 +50,10 @@ export default class Barrier extends cc.Component {
             this.mainController.removeBarrier(this);
         } else {
             this.setScore(this.score - 1);
+            this.mainController.addTotalScore();
+            if(this.score==0){
+                this.mainController.removeBarrier(this);
+            }
         }
     }
 

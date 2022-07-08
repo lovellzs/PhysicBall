@@ -22,7 +22,12 @@ export default class MainContoller extends cc.Component {
     @property([Ball])
     balls: Ball[] = [];
 
+    @property(cc.Label)
+    lbTotalScore: cc.Label = null;
+
     barriers: Barrier[] = [];
+
+    totalScore:number = -1;
 
     initPhysicsManager() {
         let manager = cc.director.getPhysicsManager();
@@ -44,7 +49,7 @@ export default class MainContoller extends cc.Component {
 
 
     start() {
-
+        this.addTotalScore();
     }
 
     // update (dt) {}
@@ -52,7 +57,8 @@ export default class MainContoller extends cc.Component {
 
     onTouchStart(touch: cc.Event.EventTouch) {
         let touchPos = this.node.convertTouchToNodeSpaceAR(touch.touch);
-        this.shootBall(this.balls[0],touchPos.sub(cc.v2(0,360)));
+        // this.shootBall(this.balls[0],touchPos.sub(cc.v2(0,360)));
+        this.shootBalls(touchPos.sub(cc.v2(0,360)));
     }
 
     addBall(pos:cc.Vec2){
@@ -60,6 +66,15 @@ export default class MainContoller extends cc.Component {
         ball.node.parent = this.node;
         ball.node.setPosition(pos);
         this.balls.push(ball);
+    }
+
+    shootBalls(direction: cc.Vec2) {
+        for (let i = 0; i < this.balls.length; i++) {
+            let ballTmp = this.balls[i];
+            this.scheduleOnce(function () {
+                this.shootBall(ballTmp, direction);
+            }.bind(this), i * 0.3);
+        }
     }
 
     shootBall(ball:Ball ,direction:cc.Vec2){
@@ -106,5 +121,10 @@ export default class MainContoller extends cc.Component {
             barrier.node.removeFromParent(false);
             this.barriers.slice(index,1)
         }
+    }
+
+    addTotalScore(){
+        this.totalScore +=1;
+        this.lbTotalScore.string = this.totalScore.toString();
     }
 }
