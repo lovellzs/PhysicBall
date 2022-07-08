@@ -7,7 +7,6 @@
 
 import Ball from "./Ball";
 import Barrier from "./Barrier";
-import macro = cc.macro;
 
 const {ccclass, property} = cc._decorator;
 
@@ -17,8 +16,12 @@ export default class MainContoller extends cc.Component {
     @property([cc.Prefab])
     polygonTypes: cc.Prefab[] = [];
 
+    @property(cc.Prefab)
+    prefabBall:cc.Prefab = null;
+
     @property([Ball])
     balls: Ball[] = [];
+
     barriers: Barrier[] = [];
 
     initPhysicsManager() {
@@ -39,9 +42,24 @@ export default class MainContoller extends cc.Component {
         this.node.on(cc.Node.EventType.TOUCH_START,this.onTouchStart,this);
     }
 
+
+    start() {
+
+    }
+
+    // update (dt) {}
+
+
     onTouchStart(touch: cc.Event.EventTouch) {
         let touchPos = this.node.convertTouchToNodeSpaceAR(touch.touch);
         this.shootBall(this.balls[0],touchPos.sub(cc.v2(0,360)));
+    }
+
+    addBall(pos:cc.Vec2){
+        let ball = cc.instantiate(this.prefabBall).getComponent<Ball>(Ball);
+        ball.node.parent = this.node;
+        ball.node.setPosition(pos);
+        this.balls.push(ball);
     }
 
     shootBall(ball:Ball ,direction:cc.Vec2){
@@ -59,12 +77,6 @@ export default class MainContoller extends cc.Component {
         ));
     }
 
-    start() {
-
-    }
-
-    // update (dt) {}
-
     addBarriers() {
         let startPosX = -290;
         let endPosX = 230;
@@ -73,8 +85,9 @@ export default class MainContoller extends cc.Component {
         while (currentPosX < endPosX) {
             let randomIndex = Math.floor(this.polygonTypes.length * Math.random());
             console.log(randomIndex, currentPosX);
-            let barrierTemp = cc.instantiate(this.polygonTypes[randomIndex]).getComponent(Barrier);
+            let barrierTemp = cc.instantiate(this.polygonTypes[randomIndex]).getComponent<Barrier>(Barrier);
             barrierTemp.node.parent = this.node;
+            barrierTemp.mainController = this;
             barrierTemp.node.rotation = Math.random() * 360;
             barrierTemp.node.position = cc.v3(currentPosX, -344);
             this.barriers.push(barrierTemp);
@@ -85,5 +98,13 @@ export default class MainContoller extends cc.Component {
 
     getRandomSpace(): number {
         return 100 + Math.random() * 100;
+    }
+
+    removeBarrier(barrier:Barrier){
+        let index = this.barriers.indexOf(barrier);
+        if(index!=-1){
+            barrier.node.removeFromParent(false);
+            this.barriers.slice(index,1)
+        }
     }
 }
