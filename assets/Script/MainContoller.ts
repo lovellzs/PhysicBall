@@ -17,6 +17,7 @@ export default class MainContoller extends cc.Component {
     @property([cc.Prefab])
     polygonTypes: cc.Prefab[] = [];
 
+    @property([Ball])
     balls: Ball[] = [];
     barriers: Barrier[] = [];
 
@@ -34,6 +35,28 @@ export default class MainContoller extends cc.Component {
     onLoad() {
         this.initPhysicsManager();
         this.addBarriers();
+
+        this.node.on(cc.Node.EventType.TOUCH_START,this.onTouchStart,this);
+    }
+
+    onTouchStart(touch: cc.Event.EventTouch) {
+        let touchPos = this.node.convertTouchToNodeSpaceAR(touch.touch);
+        this.shootBall(this.balls[0],touchPos.sub(cc.v2(0,360)));
+    }
+
+    shootBall(ball:Ball ,direction:cc.Vec2){
+        ball.rigidBody.active = false;
+        let poses: cc.Vec2[] = [];
+        poses.push(ball.node.getPosition());
+        poses.push(cc.v2(0,360));
+
+        ball.node.runAction(cc.sequence(
+            cc.cardinalSplineTo(0.5,poses,0.8),
+            cc.callFunc(function (){
+                ball.rigidBody.active = true;
+                ball.rigidBody.linearVelocity = direction.mul(3)
+            })
+        ));
     }
 
     start() {

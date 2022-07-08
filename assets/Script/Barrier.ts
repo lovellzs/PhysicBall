@@ -35,7 +35,7 @@ export default class Barrier extends cc.Component {
 
     onBeginContact(contact: cc.PhysicsContact, selfCollider: cc.PhysicsCollider, otherCollider: cc.PhysicsCollider) {
         console.log("onBeginContact");
-
+        this.setScore(this.score-1);
     }
 
     onPreSolve(contact: cc.PhysicsContact, selfCollider: cc.PhysicsCollider, otherCollider: cc.PhysicsCollider) {

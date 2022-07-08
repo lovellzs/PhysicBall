@@ -10,7 +10,7 @@ const {ccclass, property} = cc._decorator;
 @ccclass
 export default class Ball extends cc.Component {
 
-    private rigidBody:cc.RigidBody = null;
+    rigidBody:cc.RigidBody = null;
     private isTouchedGround = false;
 
     onLoad () {
