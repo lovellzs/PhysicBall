@@ -5,6 +5,8 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import MainContoller from "./MainContoller";
+
 const {ccclass, property} = cc._decorator;
 
 @ccclass
@@ -13,8 +15,11 @@ export default class Ball extends cc.Component {
     rigidBody:cc.RigidBody = null;
     private isTouchedGround = false;
 
+    mainController:MainContoller = null;
+
     onLoad () {
         this.rigidBody = this.node.getComponent(cc.RigidBody);
+        this.rigidBody.linearVelocity
     }
 
     start () {
@@ -36,6 +41,7 @@ export default class Ball extends cc.Component {
                 cc.cardinalSplineTo(2,pathPos,1),
                 cc.callFunc(function (){
                     this.rigidBody.active = true;
+                    this.mainController.recycleBall();
                 }.bind(this))
             ));
             this.isTouchedGround = false;

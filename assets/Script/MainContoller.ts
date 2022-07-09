@@ -7,6 +7,7 @@
 
 import Ball from "./Ball";
 import Barrier from "./Barrier";
+import PhysicsCircleCollider = cc.PhysicsCircleCollider;
 
 const {ccclass, property} = cc._decorator;
 
@@ -17,7 +18,7 @@ export default class MainContoller extends cc.Component {
     polygonTypes: cc.Prefab[] = [];
 
     @property(cc.Prefab)
-    prefabBall:cc.Prefab = null;
+    prefabBall: cc.Prefab = null;
 
     @property([Ball])
     balls: Ball[] = [];
@@ -27,7 +28,7 @@ export default class MainContoller extends cc.Component {
 
     barriers: Barrier[] = [];
 
-    totalScore:number = -1;
+    totalScore: number = -1;
 
     initPhysicsManager() {
         let manager = cc.director.getPhysicsManager();
@@ -43,8 +44,8 @@ export default class MainContoller extends cc.Component {
     onLoad() {
         this.initPhysicsManager();
         this.addBarriers();
-
-        this.node.on(cc.Node.EventType.TOUCH_START,this.onTouchStart,this);
+        this.balls[0].mainController = this;
+        this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
     }
 
 
@@ -56,15 +57,21 @@ export default class MainContoller extends cc.Component {
 
 
     onTouchStart(touch: cc.Event.EventTouch) {
+        if (!this.isRecycleFinish()) {
+            return;
+        }
+        this.recycleBallCount = 0;
+
         let touchPos = this.node.convertTouchToNodeSpaceAR(touch.touch);
         // this.shootBall(this.balls[0],touchPos.sub(cc.v2(0,360)));
-        this.shootBalls(touchPos.sub(cc.v2(0,360)));
+        this.shootBalls(touchPos.sub(cc.v2(0, 360)));
     }
 
-    addBall(pos:cc.Vec2){
+    addBall(pos: cc.Vec2) {
         let ball = cc.instantiate(this.prefabBall).getComponent<Ball>(Ball);
         ball.node.parent = this.node;
         ball.node.setPosition(pos);
+        ball.mainController = this;
         this.balls.push(ball);
     }
 
@@ -77,20 +84,40 @@ export default class MainContoller extends cc.Component {
         }
     }
 
-    shootBall(ball:Ball ,direction:cc.Vec2){
+    shootBall(ball: Ball, direction: cc.Vec2) {
         ball.rigidBody.active = false;
         let poses: cc.Vec2[] = [];
         poses.push(ball.node.getPosition());
-        poses.push(cc.v2(0,360));
+        poses.push(cc.v2(0, 360));
 
         ball.node.runAction(cc.sequence(
-            cc.cardinalSplineTo(0.5,poses,0.8),
-            cc.callFunc(function (){
+            cc.cardinalSplineTo(0.5, poses, 0.8),
+            cc.callFunc(function () {
                 ball.rigidBody.active = true;
                 ball.rigidBody.linearVelocity = direction.mul(3)
             })
         ));
     }
+
+    private recycleBallCount = 1;
+
+    //回首球
+    recycleBall() {
+        this.recycleBallCount++;
+
+        if (this.isRecycleFinish()) {
+            for (let i = 0; i < this.barriers.length; i++) {
+                let barrier = this.barriers[i];
+                barrier.node.runAction(cc.moveBy(0.5, cc.v2(0, 100)));
+            }
+            this.addBarriers();
+        }
+    }
+
+    isRecycleFinish(): Boolean {
+        return this.recycleBallCount == this.balls.length;
+    }
+
 
     addBarriers() {
         let startPosX = -290;
@@ -115,16 +142,16 @@ export default class MainContoller extends cc.Component {
         return 100 + Math.random() * 100;
     }
 
-    removeBarrier(barrier:Barrier){
+    removeBarrier(barrier: Barrier) {
         let index = this.barriers.indexOf(barrier);
-        if(index!=-1){
+        if (index != -1) {
             barrier.node.removeFromParent(false);
-            this.barriers.slice(index,1)
+            this.barriers.slice(index, 1)
         }
     }
 
-    addTotalScore(){
-        this.totalScore +=1;
+    addTotalScore() {
+        this.totalScore += 1;
         this.lbTotalScore.string = this.totalScore.toString();
     }
 }
