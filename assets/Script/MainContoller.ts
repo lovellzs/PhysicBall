@@ -7,7 +7,7 @@
 
 import Ball from "./Ball";
 import Barrier from "./Barrier";
-import PhysicsCircleCollider = cc.PhysicsCircleCollider;
+import Config from "./Config";
 
 const {ccclass, property} = cc._decorator;
 
@@ -33,18 +33,20 @@ export default class MainContoller extends cc.Component {
     initPhysicsManager() {
         let manager = cc.director.getPhysicsManager();
         manager.enabled = true;
-        cc.director.getPhysicsManager().debugDrawFlags =
-            cc.PhysicsManager.DrawBits.e_aabbBit |
-            // cc.PhysicsManager.DrawBits.e_pairBit |
-            // cc.PhysicsManager.DrawBits.e_centerOfMassBit |
-            cc.PhysicsManager.DrawBits.e_jointBit |
-            cc.PhysicsManager.DrawBits.e_shapeBit;
+        // cc.director.getPhysicsManager().debugDrawFlags =
+        //     cc.PhysicsManager.DrawBits.e_aabbBit |
+        //     // cc.PhysicsManager.DrawBits.e_pairBit |
+        //     // cc.PhysicsManager.DrawBits.e_centerOfMassBit |
+        //     cc.PhysicsManager.DrawBits.e_jointBit |
+        //     cc.PhysicsManager.DrawBits.e_shapeBit;
     }
 
     onLoad() {
         this.initPhysicsManager();
         this.addBarriers();
+
         this.balls[0].mainController = this;
+        this.balls[0].node.group = Config.groupBallInRecycle;
         this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this);
     }
 
@@ -72,6 +74,7 @@ export default class MainContoller extends cc.Component {
         ball.node.parent = this.node;
         ball.node.setPosition(pos);
         ball.mainController = this;
+        ball.node.group = Config.groupBallInGame;
         this.balls.push(ball);
     }
 
@@ -86,6 +89,8 @@ export default class MainContoller extends cc.Component {
 
     shootBall(ball: Ball, direction: cc.Vec2) {
         ball.rigidBody.active = false;
+        ball.node.group = Config.groupBallInGame;
+
         let poses: cc.Vec2[] = [];
         poses.push(ball.node.getPosition());
         poses.push(cc.v2(0, 360));

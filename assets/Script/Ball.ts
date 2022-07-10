@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import MainContoller from "./MainContoller";
+import Config from "./Config";
 
 const {ccclass, property} = cc._decorator;
 
@@ -41,6 +42,7 @@ export default class Ball extends cc.Component {
                 cc.cardinalSplineTo(2,pathPos,1),
                 cc.callFunc(function (){
                     this.rigidBody.active = true;
+                    this.node.group = Config.groupBallInRecycle;
                     this.mainController.recycleBall();
                 }.bind(this))
             ));
